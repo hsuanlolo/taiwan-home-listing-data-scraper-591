@@ -50,7 +50,7 @@ def scrape_city(client, cfg, region_id, city_name, logger):
     for page in range(max_pages):
         first_row = page * per_page
         params = {
-            "region": region_id,
+            "regionid": region_id,
             "firstRow": first_row,
             "totalRows": total_rows,
             "order": "posttime",

@@ -1,4 +1,6 @@
-data/
+data/cache/
+data/processed/
+data/charts/
 logs/
 __pycache__/
 *.pyc

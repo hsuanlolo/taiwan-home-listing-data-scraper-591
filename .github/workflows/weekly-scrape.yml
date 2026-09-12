@@ -1,0 +1,50 @@
+name: Weekly 591 Scrape
+
+on:
+  schedule:
+    # Every Friday 11:00 AM Taiwan time (UTC+8) = 03:00 UTC Friday
+    - cron: "0 3 * * 5"
+  workflow_dispatch:  # Allow manual trigger from GitHub UI
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Create required directories
+        run: mkdir -p data/raw data/output data/processed data/charts data/cache logs
+
+      - name: Scrape rentals
+        run: python src/scrape_rentals.py
+
+      - name: Scrape resales
+        run: python src/scrape_resales.py
+
+      - name: Scrape new developments
+        run: python src/scrape_new_developments.py
+
+      - name: Process weekly
+        run: python src/process_weekly.py
+
+      - name: Commit and push data
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/raw/ data/output/
+          git diff --cached --quiet && echo "No changes to commit" || \
+            git commit -m "chore: weekly scrape $(date -u +%Y-%m-%d)" && git push
